@@ -1,4 +1,4 @@
-<img width="563" height="440" alt="image" src="https://github.com/user-attachments/assets/69b7cebf-2326-4b8b-8c01-8a4cb6201eee" /># NASA Mega API Backend
+# NASA Mega API Backend
 
 Backend unificado en Python para consumir varias APIs de la NASA y devolver información en JSON.  
 No necesita frontend y se puede probar directamente desde Swagger UI o Postman.
@@ -222,4 +222,5 @@ tests/test_endpoints.py::test_space_weather PASSED
 Este proyecto se distribuye bajo licencia MIT.
 
 ---
+
 
