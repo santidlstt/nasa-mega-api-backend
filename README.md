@@ -204,6 +204,7 @@ tests/test_endpoints.py::test_space_weather PASSED
 🌟 Buenas prácticas aplicadas y sugeridas
 
   ✅ Aplicadas
+  
     - Modularidad: separación entre configuración, servicios y routers.
     - Configuración segura con .env.
     - Testing automatizado con pytest y FastAPI TestClient.
@@ -211,6 +212,7 @@ tests/test_endpoints.py::test_space_weather PASSED
     - Control de resultados grandes con limit.
 
 ⚠️ Sugeridas
+
     -Validación de parámetros con Pydantic.
     - Manejo de errores con códigos HTTP claros.
     - Logging de requests y errores.
@@ -222,5 +224,6 @@ tests/test_endpoints.py::test_space_weather PASSED
 Este proyecto se distribuye bajo licencia MIT.
 
 ---
+
 
 
