@@ -1,4 +1,4 @@
-# NASA Mega API Backend
+<img width="563" height="440" alt="image" src="https://github.com/user-attachments/assets/69b7cebf-2326-4b8b-8c01-8a4cb6201eee" /># NASA Mega API Backend
 
 Backend unificado en Python para consumir varias APIs de la NASA y devolver información en JSON.  
 No necesita frontend y se puede probar directamente desde Swagger UI o Postman.
@@ -17,24 +17,7 @@ No necesita frontend y se puede probar directamente desde Swagger UI o Postman.
 
 ## 🗂 Estructura del proyecto
 
-nasa-mega-api-backend/
-│
-├─ app/
-│   ├─ __init__.py
-│   ├─ main.py        # Inicializa FastAPI y routers
-│   ├─ config.py      # Variables de entorno y API Key de NASA
-│   ├─ services.py    # Funciones que llaman a las APIs de NASA
-│   └─ routers.py     # Endpoints de FastAPI
-│
-├─ tests/
-│   └─ test_endpoints.py   # Tests con TestClient de FastAPI
-│
-├─ run.py             # Ejecuta la API con Uvicorn
-├─ requirements.txt   # Librerías necesarias
-├─ .env               # NASA_API_KEY (no subir a GitHub)
-├─ .env.example       # Ejemplo de archivo .env
-└─ README.md          # Documentación completa y buenas prácticas
-
+<img width="563" height="440" alt="image" src="https://github.com/user-attachments/assets/739c9b5c-9f19-40ff-aac0-280e81e45938" />
 
 ---
 
@@ -239,3 +222,4 @@ tests/test_endpoints.py::test_space_weather PASSED
 Este proyecto se distribuye bajo licencia MIT.
 
 ---
+
