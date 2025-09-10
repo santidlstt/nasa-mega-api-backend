@@ -1,37 +1,34 @@
-import requests
-from datetime import datetime, timedelta
+import httpx
+from datetime import datetime, timedelta, date as DateType
 from .config import NASA_API_KEY
 
 BASE_URL = "https://api.nasa.gov"
 
-def get_apod(date=None):
+async def fetch_apod(date: DateType = None):
     url = f"{BASE_URL}/planetary/apod"
     params = {"api_key": NASA_API_KEY}
     if date:
-        params["date"] = date
-    response = requests.get(url, params=params)
-    return response.json()
+        params["date"] = date.isoformat()
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(url, params=params)
+    return resp.json()
 
-def get_neo(start_date, end_date, limit=None):
-    try:
-        start = datetime.strptime(start_date, "%Y-%m-%d")
-        end = datetime.strptime(end_date, "%Y-%m-%d")
-    except ValueError:
-        return {"error": "Formato de fecha inválido. Use YYYY-MM-DD."}
 
+async def fetch_neo(start_date: DateType, end_date: DateType, limit: int = 10):
     delta = timedelta(days=7)
     results = []
 
-    current_start = start
-    while current_start <= end:
-        current_end = min(current_start + delta - timedelta(days=1), end)
+    current_start = start_date
+    while current_start <= end_date:
+        current_end = min(current_start + delta - timedelta(days=1), end_date)
         url = f"{BASE_URL}/neo/rest/v1/feed"
         params = {
-            "start_date": current_start.strftime("%Y-%m-%d"),
-            "end_date": current_end.strftime("%Y-%m-%d"),
+            "start_date": current_start.isoformat(),
+            "end_date": current_end.isoformat(),
             "api_key": NASA_API_KEY
         }
-        resp = requests.get(url, params=params)
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(url, params=params)
         data = resp.json()
         for date_key in data.get("near_earth_objects", {}):
             for neo in data["near_earth_objects"][date_key]:
@@ -46,40 +43,42 @@ def get_neo(start_date, end_date, limit=None):
                 })
         current_start = current_end + timedelta(days=1)
 
-    if limit:
-        results = results[:limit]
-    return results
+    return results[:limit]
 
-def get_mars_rover_photos(rover="curiosity", sol=1000, camera=None, limit=20):
+
+async def fetch_mars_rover(rover: str = "curiosity", sol: int = 1000, camera: str = None, limit: int = 20):
     url = f"{BASE_URL}/mars-photos/api/v1/rovers/{rover}/photos"
     params = {"sol": sol, "api_key": NASA_API_KEY}
     if camera:
         params["camera"] = camera
-    response = requests.get(url, params=params)
-    data = response.json()
-    photos = [{"id": p["id"], "img_src": p["img_src"], "earth_date": p["earth_date"], "camera": p["camera"]["full_name"]}
-                for p in data.get("photos", [])]
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(url, params=params)
+    data = resp.json()
+    photos = [
+        {"id": p["id"], "img_src": p["img_src"], "earth_date": p["earth_date"], "camera": p["camera"]["full_name"]}
+        for p in data.get("photos", [])
+    ]
     return photos[:limit]
 
-def get_epic_images(date):
-    try:
-        dt = datetime.strptime(date, "%Y-%m-%d")
-    except ValueError:
-        return {"error": "Formato de fecha inválido. Use YYYY-MM-DD."}
 
-    if dt < datetime(2015, 6, 13):
+async def fetch_space_weather(date: DateType):
+    if date < DateType(2015, 6, 13):
         return {"error": "La fecha mínima es 2015-06-13."}
 
-    url = f"{BASE_URL}/EPIC/api/natural/date/{date}"
+    url = f"{BASE_URL}/EPIC/api/natural/date/{date.isoformat()}"
     params = {"api_key": NASA_API_KEY}
-    response = requests.get(url, params=params)
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(url, params=params)
 
-    if response.status_code != 200 or not response.json():
-        return {"message": f"No se encontraron imágenes para la fecha {date}."}
+    if resp.status_code != 200 or not resp.json():
+        return {"message": f"No se encontraron imágenes para la fecha {date.isoformat()}."}
 
-    data = response.json()
-    return [{
-        "image": f"https://epic.gsfc.nasa.gov/archive/natural/{date.replace('-', '/')}/png/{item['image']}.png",
-        "caption": item["caption"],
-        "date": item["date"]
-    } for item in data]
+    data = resp.json()
+    return [
+        {
+            "image": f"https://epic.gsfc.nasa.gov/archive/natural/{date.strftime('%Y/%m/%d')}/png/{item['image']}.png",
+            "caption": item["caption"],
+            "date": item["date"]
+        }
+        for item in data
+    ]
