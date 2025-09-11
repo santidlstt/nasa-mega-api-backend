@@ -11,8 +11,16 @@ async def fetch_apod(date: DateType = None):
         params["date"] = date.isoformat()
     async with httpx.AsyncClient() as client:
         resp = await client.get(url, params=params)
-    return resp.json()
-
+    if resp.status_code != 200:
+        return {"error": f"Error en la API de NASA: {resp.status_code}"}
+    data = resp.json()
+    return {
+        "title": data.get("title"),
+        "date": data.get("date"),
+        "explanation": data.get("explanation"),
+        "url": data.get("url"),
+        "media_type": data.get("media_type")
+    }
 
 async def fetch_neo(start_date: DateType, end_date: DateType, limit: int = 10):
     delta = timedelta(days=7)
@@ -29,6 +37,8 @@ async def fetch_neo(start_date: DateType, end_date: DateType, limit: int = 10):
         }
         async with httpx.AsyncClient() as client:
             resp = await client.get(url, params=params)
+        if resp.status_code != 200:
+            return {"error": f"Error en la API de NASA: {resp.status_code}"}
         data = resp.json()
         for date_key in data.get("near_earth_objects", {}):
             for neo in data["near_earth_objects"][date_key]:
@@ -45,7 +55,6 @@ async def fetch_neo(start_date: DateType, end_date: DateType, limit: int = 10):
 
     return results[:limit]
 
-
 async def fetch_mars_rover(rover: str = "curiosity", sol: int = 1000, camera: str = None, limit: int = 20):
     url = f"{BASE_URL}/mars-photos/api/v1/rovers/{rover}/photos"
     params = {"sol": sol, "api_key": NASA_API_KEY}
@@ -53,13 +62,14 @@ async def fetch_mars_rover(rover: str = "curiosity", sol: int = 1000, camera: st
         params["camera"] = camera
     async with httpx.AsyncClient() as client:
         resp = await client.get(url, params=params)
+    if resp.status_code != 200:
+        return {"error": f"Error en la API de NASA: {resp.status_code}"}
     data = resp.json()
     photos = [
         {"id": p["id"], "img_src": p["img_src"], "earth_date": p["earth_date"], "camera": p["camera"]["full_name"]}
         for p in data.get("photos", [])
     ]
     return photos[:limit]
-
 
 async def fetch_space_weather(date: DateType):
     if date < DateType(2015, 6, 13):
@@ -69,10 +79,8 @@ async def fetch_space_weather(date: DateType):
     params = {"api_key": NASA_API_KEY}
     async with httpx.AsyncClient() as client:
         resp = await client.get(url, params=params)
-
     if resp.status_code != 200 or not resp.json():
         return {"message": f"No se encontraron imágenes para la fecha {date.isoformat()}."}
-
     data = resp.json()
     return [
         {

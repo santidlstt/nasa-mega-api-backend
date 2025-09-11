@@ -34,8 +34,20 @@ def test_neo():
 def test_neo_exceed_range():
     start = (date.today() - timedelta(days=10)).isoformat()
     end = date.today().isoformat()
+    # Con Pydantic, el error se transforma en 422 (ValidationError)
     response = client.get(f"/neo?start_date={start}&end_date={end}")
-    assert response.status_code == 400  
+    assert response.status_code == 422
+    data = response.json()
+    assert "La fecha de fin no puede ser anterior" in str(data) or "rango máximo" in str(data)
+
+def test_neo_start_after_end():
+    start = date.today().isoformat()
+    end = (date.today() - timedelta(days=1)).isoformat()
+    # También genera 422
+    response = client.get(f"/neo?start_date={start}&end_date={end}")
+    assert response.status_code == 422
+    data = response.json()
+    assert "La fecha de fin no puede ser anterior a la fecha de inicio." in str(data)
 
 def test_mars_rover():
     response = client.get("/mars-rover?rover=curiosity&sol=1000&limit=5")
@@ -57,7 +69,9 @@ def test_space_weather():
 
 def test_space_weather_before_min_date():
     response = client.get("/space-weather?date=2015-06-01")
-    assert response.status_code == 400  
+    assert response.status_code == 422
+    data = response.json()
+    assert "No hay imágenes disponibles antes de" in str(data)
 
 def test_space_weather_invalid_date():
     response = client.get("/space-weather?date=2025-13-01")  

@@ -1,8 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from app import services
 from app.schemas import ApodRequest, NeoRequest, MarsRoverRequest, SpaceWeatherRequest
-from datetime import date as DateType
-
 
 router = APIRouter()
 
@@ -25,12 +23,7 @@ async def get_apod(params: ApodRequest = Depends()):
 
 @router.get("/neo")
 async def get_neo(params: NeoRequest = Depends()):
-    delta = (params.end_date - params.start_date).days
-    if delta > 7:
-        raise HTTPException(
-            status_code=400,
-            detail="El rango máximo permitido es de 7 días."
-        )
+    # Ya no validamos rango ni fechas, lo hace NeoRequest con @field_validator
     return await services.fetch_neo(
         start_date=params.start_date,
         end_date=params.end_date,
@@ -48,10 +41,5 @@ async def get_mars_rover(params: MarsRoverRequest = Depends()):
 
 @router.get("/space-weather")
 async def get_space_weather(params: SpaceWeatherRequest = Depends()):
-    min_date = DateType(2015, 6, 13)
-    if params.date < min_date:
-        raise HTTPException(
-            status_code=400,
-            detail="No hay imágenes disponibles antes de 2015-06-13."
-        )
+    # Validación de fecha mínima eliminada, la hace Pydantic
     return await services.fetch_space_weather(date=params.date)
